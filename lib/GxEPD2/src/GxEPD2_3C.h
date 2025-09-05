@@ -322,6 +322,7 @@ class GxEPD2_3C : public GxEPD2_GFX_BASE_CLASS
       uint16_t page_ys = _current_page * _page_height;
       if (_using_partial_mode)
       {
+        log_d("test");
         //Serial.print("  nextPage("); Serial.print(_pw_x); Serial.print(", "); Serial.print(_pw_y); Serial.print(", ");
         //Serial.print(_pw_w); Serial.print(", "); Serial.print(_pw_h); Serial.print(") P"); Serial.println(_current_page);
         uint16_t page_ye = _current_page < int16_t(_pages - 1) ? page_ys + _page_height : HEIGHT;
@@ -345,6 +346,7 @@ class GxEPD2_3C : public GxEPD2_GFX_BASE_CLASS
           _current_page = 0;
           if (!_second_phase)
           {
+            log_d("%d %d %d %d", _pw_x, _pw_y, _pw_w, _pw_h);
             epd2.refresh(_pw_x, _pw_y, _pw_w, _pw_h);
             if (epd2.hasFastPartialUpdate)
             {

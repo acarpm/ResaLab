@@ -25,7 +25,7 @@ class GxEPD2_290_C90c : public GxEPD2_EPD
     static const GxEPD2::Panel panel = GxEPD2::GDEM029C90;
     static const bool hasColor = true;
     static const bool hasPartialUpdate = true; // but refresh is full screen
-    static const bool hasFastPartialUpdate = false;
+    static const bool hasFastPartialUpdate = true;
     static const uint16_t power_on_time = 100; // ms, e.g. 94628us
     static const uint16_t power_off_time = 150; // ms, e.g. 139874us
     static const uint16_t full_refresh_time = 27000; // ms, e.g. 26130024us

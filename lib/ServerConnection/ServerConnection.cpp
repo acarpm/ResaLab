@@ -35,16 +35,27 @@ uint8_t ServerConnection::checkConnection() {
     // Check wifi connection
     if (WiFi.status() != WL_CONNECTED) {
 
-        log_e("Wifi disconnected.");
+        log_e("Wifi disconnected. %d", WiFi.status());
         return ERROR_WIFI_DISCONNECTED;
     }
 
-    // Check if the server responds
-    httpResponseCode = http.GET();
-    if (httpResponseCode != 200) {
+    if (url.isEmpty()) {
+    log_e("URL is empty. Cannot check connection.");
+    return ERROR_SERVER_CONNECTION_FAILED;
+}
 
-        log_e("Server disconnected.");
-        return ERROR_SERVER_DISCONNECTED;
+    // Check if the server responds
+    errorCode = sendRequest(TEST_CONNECTION, REQUEST_SIZE, "00000000", PAYLOAD_SIZE, &httpResponseCode);
+
+    if (errorCode != CODE_SUCCESS) {
+        return errorCode;
+    }
+
+    String serverResponse = getResponse();
+
+    if (!serverResponse.equals(CONNECTION_OK)) {
+        log_e("Invalid server response: %s", serverResponse.c_str());
+        return ERROR_INVALID_SERVER_RESPONSE;
     }
 
     return CODE_SUCCESS;
@@ -79,11 +90,21 @@ uint8_t ServerConnection::sendRequest(const char* request, int requestLen, const
     log_d("Full request: %s", fullRequest.c_str());
 
     *responseCode = http.POST(fullRequest);
+
+    if (*responseCode <= 0) {
+        log_e("HTTP POST failed. Error: %s", http.errorToString(*responseCode).c_str());
+        return ERROR_SERVER_DISCONNECTED;
+    }
+    
+    log_d("HTTP POST Response Code: %d", *responseCode);
+
     return CODE_SUCCESS;
 }
 
 String ServerConnection::getResponse() {
-    return http.getString();
+    String response = http.getString();
+    response.trim();
+    return response;
 }
 
 String ServerConnection::getErrorToString(int httpResponseCode) {
