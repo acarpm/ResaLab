@@ -23,9 +23,10 @@ function handleReservationRequest($device_id_str, $conn) {
     $stmt = $conn->prepare("
         SELECT booking_id, start_time, status, end_time
         FROM booking
-        WHERE start_time >= NOW()
+        WHERE end_time >= NOW()
             AND device_id = ?
-        ORDER BY start_time ASC
+            AND status IN ('à venir', 'en cours')
+        ORDER BY end_time ASC
         LIMIT 1
     ");
 
@@ -58,6 +59,49 @@ function handleReservationRequest($device_id_str, $conn) {
     return $response;
 }
 
+function changeReservationState($reservationID, $newStateCode, $conn) {
+    $newState = "";
+    switch ($newStateCode) {
+        case "1": // Get next reservation
+            $newState = "en cours";
+            break;
+        case "2": // Change reservation state
+            $newState = "annulé";
+            break;
+        default:
+            $response = "400\n";
+    }
+
+    $stmt = $conn->prepare("UPDATE booking SET status = ? WHERE booking_id = ?");
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param("si", $newState, $reservationID);
+    $result = $stmt->execute();
+
+
+    $stmt = $conn->prepare("SELECT status FROM booking WHERE booking_id = ?");
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param("i", $reservationID);
+    $stmt->execute();
+    $stmt->bind_result($currentStatus);
+    if($stmt->fetch()) {
+        if ($currentStatus === $newState) {
+            $response = "006\n"; // State changed successfully
+        } else {
+            $response = "007\n"; // State not changed
+        }
+    } else {
+        $response = "007\n"; // State not changed (reservation not found)
+    }
+    $stmt->close();
+    $conn->close();
+
+    return $response;
+}
+
 // 2. Gestion POST : récupérer la donnée brute
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Récupérer le corps brut POST
@@ -70,11 +114,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payload = substr($input, 3);
 
     switch ($commande) {
+        case "100": // Test connection
+            $response = "200\n";
+            break;
         case "102": // Get next reservation
             $response = handleReservationRequest($payload, $conn);
             break;
-        case "100": // Test connection
-            $response = "200\n";
+        case "103": // Change reservation state
+            if (strlen($payload) < 7) {
+                http_response_code(400);
+                $response = "Format invalide\n";
+                break;
+            }
+            $reservationID_str = intval(substr($payload, 0, 5));
+            $newState_code = intval(substr($payload, 5));
+            $response = changeReservationState($reservationID_str, $newState_code, $conn);
             break;
         default:
             $response = "400\n";

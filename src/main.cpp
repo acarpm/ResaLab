@@ -22,6 +22,7 @@ ATTENTION LE BOOKING ID IL FAUT RAJOUTER DES 0 POUR EVITER LE RAJOUT DE CHIFFRE 
 #define RED_LED_PIN 1
 
 #define LEFT_BUTTON_PIN 18
+#define MIDDLE_BUTTON_PIN 5
 
 #define RESERVATION_TIME 150 // in minutes
 
@@ -46,6 +47,7 @@ Led orangeLed = Led(ORANGE_LED_PIN);
 Led redLed = Led(RED_LED_PIN);
 
 Button leftButton = Button(LEFT_BUTTON_PIN);
+Button middleButton = Button(MIDDLE_BUTTON_PIN);
 
 const char* ntpServer = "pool.ntp.org";    // NTP server
 const long gmtOffset_sec = 0;             // GMT offset in seconds
@@ -60,6 +62,8 @@ void mainSreen();
 int checkReservations();
 
 void changeReservationState(String reservationID, String newState);
+
+void getReservationName(int reservationID, String& name, String& surname);
 
 void setup() {
 
@@ -104,14 +108,18 @@ void loop() {
     currentReservationId = checkReservations();
   }
 
-  log_v("Current reservation ID: %d", currentReservationId);
-  log_v("isToValid: %d", isToValid);
-
-  if (leftButton.isPressed() && isToValid) {
+  if (leftButton.isPressed() && isToValid && currentReservationId != -1) {
     changeReservationState((String)currentReservationId, RESERVATION_ONGOING);
     isToValid = false;
   }
-  delay(100);
+
+  if (middleButton.isPressed() && currentReservationId != -1) {
+    changeReservationState((String)currentReservationId, RESERVATION_CANCELLED);
+    isToValid = false;
+    redLed.off();
+    greenLed.on();
+    orangeLed.off();
+  }
 }
 
 int checkReservations() {
@@ -119,7 +127,6 @@ int checkReservations() {
 
   int errorCode = server.sendRequest(GET_NEXT_RESERVATION, strlen(GET_NEXT_RESERVATION), deviceId, strlen(deviceId), &httpResponseCode);
   String response = server.getResponse();
-  response = "00400080117574167961757616796"; // For testing purposes
 
   log_d("Server response: %s", response.c_str());
 
@@ -127,6 +134,9 @@ int checkReservations() {
 
   if (serverResponseCode.equals(INVALID_RESERVATION)) {
     log_i("No reservation found.");
+    greenLed.on();
+    redLed.off();
+    orangeLed.off();
     return -1;
   }
 
@@ -183,11 +193,11 @@ void changeReservationState(String reservationID, String newState) {
   log_d("ID : %s, new state : %s", reservationID.c_str(), newState.c_str());
 
   String payload = "";
-  for (int i = reservationID.length(); i < 6; i++) {
+  for (int i = reservationID.length(); i < 5; i++) {
     payload += "0";
   }
   payload += reservationID;
-  for (int i = newState.length(); i < 2; i++) {
+  for (int i = newState.length(); i < 3; i++) {
     payload += "0";
   }
   payload += newState;
@@ -239,6 +249,40 @@ bool checkWifiConnection() {
 
   log_d("Reconnection failed with error code: %d", errorCode);
   return false;
+}
+
+void getReservationName(int reservationID, String& name, String& surname) {
+  int httpResponseCode = 0;
+
+  char idBuffer[9
+  ];
+  snprintf(idBuffer, sizeof(idBuffer), "%08d", reservationID);
+
+  // Prepare payload (here just the reservationID, adjust if your API expects more)
+  String payload = String(idBuffer);
+
+  // Send request to server (replace GET_RESERVATION_NAME with your actual command)
+  int errorCode = server.sendRequest(GET_RESERVATION_NAME, strlen(GET_RESERVATION_NAME), payload.c_str(), payload.length(), &httpResponseCode);
+  String response = server.getResponse();
+
+  if (errorCode != CODE_SUCCESS) {
+    log_e("Failed to get reservation name. Error code: %d", errorCode);
+    name = "";
+    surname = "";
+    return;
+  }
+
+  log_d("Server response: %s", response.c_str());
+
+  // Example: suppose response is "OKJohnDoe" (first 2 chars = code, then name, then surname)
+  // Adjust parsing logic to your actual response format
+  if (response.length() >= 4) {
+    name = response.substring(2, response.length() / 2 + 1); // Example split
+    surname = response.substring(response.length() / 2 + 1);
+  } else {
+    name = "";
+    surname = "";
+  }
 }
 
 void mainScreen() {
