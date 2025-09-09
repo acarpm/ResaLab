@@ -23,10 +23,13 @@ ATTENTION LE BOOKING ID IL FAUT RAJOUTER DES 0 POUR EVITER LE RAJOUT DE CHIFFRE 
 
 #define LEFT_BUTTON_PIN 18
 
-#define RESERVATION_TIME 15 // in minutes
+#define RESERVATION_TIME 150 // in minutes
 
 #define DELAY_BETWEEN_CHECKS_CONNECTION 30000 // in milliseconds
-#define DELAY_BETWEEN_CHECKS_NO_RESERVATION 60000 // in milliseconds
+#define DELAY_BETWEEN_CHECKS_NO_RESERVATION 15000 // in milliseconds
+
+#define RESERVATION_CANCELLED "2"
+#define RESERVATION_ONGOING "1"
 
 
 extern "C" int lwip_hook_ip6_input(void *p) {
@@ -54,9 +57,9 @@ bool checkWifiConnection();
 
 void mainSreen();
 
-void checkReservations();
+int checkReservations();
 
-void changeReservationState();
+void changeReservationState(String reservationID, String newState);
 
 void setup() {
 
@@ -81,8 +84,11 @@ void setup() {
 uint64_t lastTimeConnectionCheck = 0;
 uint64_t lastTimeReservationCheck = 0;
 bool isConnected = false;
+bool isToValid = true;
+int currentReservationId = -1;
 
 void loop() {
+  
   if (millis() - lastTimeConnectionCheck > DELAY_BETWEEN_CHECKS_CONNECTION || !isConnected) {
     lastTimeConnectionCheck = millis();
     log_v("Checking connection...");
@@ -92,23 +98,28 @@ void loop() {
   if (!isConnected) {
     return;
   }
-
   if (millis() - lastTimeReservationCheck > DELAY_BETWEEN_CHECKS_NO_RESERVATION) {
     lastTimeReservationCheck = millis();
-    checkReservations();
+    log_v("Checking reservations...");
+    currentReservationId = checkReservations();
   }
 
-  log_v("%d", leftButton.isPressed());
-  delay(100);
+  log_v("Current reservation ID: %d", currentReservationId);
+  log_v("isToValid: %d", isToValid);
 
+  if (leftButton.isPressed() && isToValid) {
+    changeReservationState((String)currentReservationId, RESERVATION_ONGOING);
+    isToValid = false;
+  }
+  delay(100);
 }
 
-void checkReservations() {
+int checkReservations() {
   int httpResponseCode = 0;
 
   int errorCode = server.sendRequest(GET_NEXT_RESERVATION, strlen(GET_NEXT_RESERVATION), deviceId, strlen(deviceId), &httpResponseCode);
   String response = server.getResponse();
-  response = "00411757092854"; // For testing purposes
+  response = "00400080117574167961757616796"; // For testing purposes
 
   log_d("Server response: %s", response.c_str());
 
@@ -116,51 +127,78 @@ void checkReservations() {
 
   if (serverResponseCode.equals(INVALID_RESERVATION)) {
     log_i("No reservation found.");
-    return;
+    return -1;
   }
 
-  bool isToValid = response.substring(3, 4).toInt();
-  int reservationTimestamp = response.substring(4).toInt();
+  int reservationId = response.substring(3, 8).toInt();
+  bool reservationComing = response.substring(8, 9).toInt();
+  int startReservationTimestamp = response.substring(9, 19).toInt();
+  int endReservationTimestamp = response.substring(19, 29).toInt();
 
-  log_d("isToValid: %d", isToValid);
-  log_d("reservationTimestamp: %d", reservationTimestamp);
+  log_d("Server response code: %s", serverResponseCode.c_str());
+  log_d("reservationComing: %d", reservationComing);
+  log_d("reservationId: %d", reservationId);
+  log_d("startReservationTimestamp: %d", startReservationTimestamp);
+  log_d("endReservationTimestamp: %d", endReservationTimestamp);
 
   time_t now = time(nullptr);
   if (now == -1) {
     log_e("Failed to obtain timestamp");
-    return;
+    return -1;
   }
+
+
 
   log_v("Current timestamp: %ld", now);
 
-  if (!isToValid) {
+  if (!reservationComing && now > startReservationTimestamp && now < endReservationTimestamp) {
     redLed.on();
     greenLed.off();
     orangeLed.off();
-    return;
-  }
-
-  if (now + RESERVATION_TIME * 60 > reservationTimestamp) {
+  } else if ( now > startReservationTimestamp && now < startReservationTimestamp + RESERVATION_TIME * 60) {
     greenLed.off();
     redLed.off();
     orangeLed.on();
+    isToValid = true;
   } else {
     redLed.off();
     greenLed.on();
     orangeLed.off();
-    return;
   }
 
+  if (reservationComing && now > startReservationTimestamp + RESERVATION_TIME * 60) {
+    changeReservationState(String(reservationId), RESERVATION_CANCELLED);
+    isToValid = false;
+    redLed.off();
+    greenLed.on();
+    orangeLed.off();
+  }
 
-  return;
+  return reservationId;
 }
 
 void changeReservationState(String reservationID, String newState) {
   int httpResponseCode = 0;
 
-  int errorCode = server.sendRequest(CHANGE_RESERVATION_STATE, strlen(CHANGE_RESERVATION_STATE), deviceId, strlen(deviceId), &httpResponseCode);
+  log_d("ID : %s, new state : %s", reservationID.c_str(), newState.c_str());
+
+  String payload = "";
+  for (int i = reservationID.length(); i < 6; i++) {
+    payload += "0";
+  }
+  payload += reservationID;
+  for (int i = newState.length(); i < 2; i++) {
+    payload += "0";
+  }
+  payload += newState;
+
+  int errorCode = server.sendRequest(CHANGE_RESERVATION_STATE, strlen(CHANGE_RESERVATION_STATE), payload.c_str(), payload.length(), &httpResponseCode);
   String response = server.getResponse();
 
+  if (errorCode != CODE_SUCCESS) {
+    log_e("Failed to send change reservation state request. Error code: %d", errorCode);
+    return;
+  }
   log_d("Server response: %s", response.c_str());
 
   String serverResponseCode = response.substring(0, 3);

@@ -21,7 +21,7 @@ function handleReservationRequest($device_id_str, $conn) {
 
     $device_id = intval($device_id_str);
     $stmt = $conn->prepare("
-        SELECT booking_id, start_time, status
+        SELECT booking_id, start_time, status, end_time
         FROM booking
         WHERE start_time >= NOW()
             AND device_id = ?
@@ -36,15 +36,19 @@ function handleReservationRequest($device_id_str, $conn) {
 
     $stmt->bind_param("i", $device_id);
     $stmt->execute();
-    $stmt->bind_result($booking_id, $start_time, $status);
+    $stmt->bind_result($booking_id, $start_time, $status, $finish_time);
 
     if ($stmt->fetch()) {
-        $timestamp = strtotime($start_time);
-        if ($status === 'à venir') {
-            $response = "004" . "1" . $timestamp . "\n";
+        $start_timestamp = strtotime($start_time);
+        $finish_timestamp = strtotime($finish_time);
+
+        $formatted_booking_id = str_pad(strval($booking_id), 5, "0", STR_PAD_LEFT);
+        if ($status === "à venir") {
+            $state = "1";
         } else {
-            $response = "004" ."0" . $timestamp . "\n";
+            $state = "0";
         }
+        $response = "004" . $formatted_booking_id . $state . $start_timestamp . $finish_timestamp . "\n";
     } else {
         $response = "005\n";
     }

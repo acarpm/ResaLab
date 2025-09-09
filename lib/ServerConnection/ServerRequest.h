@@ -11,6 +11,7 @@ constexpr const char* INVALID_CARD_ID = "002";        // 002 = The card is eithe
 constexpr const char* INVALID_FORMAT = "003";         // 003 = The card ID is not in the correct format
 constexpr const char* VALID_RESERVATION = "004";       // 004 = There is a reservation
 constexpr const char* INVALID_RESERVATION = "005";     // 005 = There is no reservation
+constexpr const char* RESERVATION_STATE_CHANGED = "006"; // 006 = The reservation state has been changed successfully
 constexpr const char* CONNECTION_OK = "200";         // 200 = Connection to the server is OK
 constexpr const char* INVALID_REQUEST = "400";        // 400 = The request is invalid
 
