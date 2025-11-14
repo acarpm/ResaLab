@@ -29,7 +29,7 @@ ATTENTION LE BOOKING ID IL FAUT RAJOUTER DES 0 POUR EVITER LE RAJOUT DE CHIFFRE 
 #define DELAY_BETWEEN_CHECKS_CONNECTION 30000 // in milliseconds
 #define DELAY_BETWEEN_CHECKS_NO_RESERVATION 15000 // in milliseconds
 
-#define RESERVATION_CANCELLED "2"
+#define RESERVATION_CANCELLED "4"
 #define RESERVATION_ONGOING "1"
 
 
@@ -79,7 +79,8 @@ void setup() {
   }
 
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  
+
+
   log_v("Starting connection Handler");
 
 
@@ -120,6 +121,7 @@ void loop() {
     greenLed.on();
     orangeLed.off();
   }
+  log_d("RSSI Wifi : %d dBm", WiFi.RSSI());
 }
 
 int checkReservations() {

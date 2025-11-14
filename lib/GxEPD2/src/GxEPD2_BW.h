@@ -228,7 +228,8 @@
 #endif
 
 template<typename GxEPD2_Type, const uint16_t page_height>
-class GxEPD2_BW : public GxEPD2_GFX_BASE_CLASS
+class 
+GxEPD2_BW : public GxEPD2_GFX_BASE_CLASS
 {
   public:
     GxEPD2_Type epd2;
