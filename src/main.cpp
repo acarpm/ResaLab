@@ -28,6 +28,9 @@ ATTENTION LE BOOKING ID IL FAUT RAJOUTER DES 0 POUR EVITER LE RAJOUT DE CHIFFRE 
 
 #define DELAY_BETWEEN_CHECKS_CONNECTION 30000 // in milliseconds
 #define DELAY_BETWEEN_CHECKS_NO_RESERVATION 15000 // in milliseconds
+#define DELAY_BETWEEN_CHECKS_HOURS 15000 // in milliseconds
+
+#define TIME_BEFORE_SHOWING_RESERVATION 180
 
 #define RESERVATION_CANCELLED "4"
 #define RESERVATION_ONGOING "1"
@@ -50,7 +53,7 @@ Button leftButton = Button(LEFT_BUTTON_PIN);
 Button middleButton = Button(MIDDLE_BUTTON_PIN);
 
 const char* ntpServer = "pool.ntp.org";    // NTP server
-const long gmtOffset_sec = 0;             // GMT offset in seconds
+const long gmtOffset_sec = 3600;             // GMT offset in seconds
 const int daylightOffset_sec = 3600;      // Daylight saving time offset in seconds
 
 const char* deviceId = "00000002";
@@ -63,9 +66,16 @@ int checkReservations();
 
 void changeReservationState(String reservationID, String newState);
 
-void getReservationName(int reservationID, String& name, String& surname);
+void getReservationName(String reservationID, String& name, String& surname);
+
+void getTime(int* hours, int* minutes);
+
+String formatTime(int time);
+
+bool isConnected = false;
 
 void setup() {
+  int currentHour, currentMinute;
 
   Serial.println("Starting ResaLab...");
 
@@ -74,35 +84,50 @@ void setup() {
   server.connect(serverUrl);
   uint8_t errorCode = server.checkConnection();
 
-  if (errorCode == CODE_SUCCESS) {
-    greenLed.blink(250);
+
+  while (!isConnected) {
+    isConnected = checkWifiConnection();
   }
 
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
+  screenOutput.resetScreen();
 
-  log_v("Starting connection Handler");
+  getTime(&currentHour, &currentMinute);
 
-
-  
+  screenOutput.showHour(currentHour, currentMinute);
+  screenOutput.showInternetState(true, WiFi.RSSI());
 }
 uint64_t lastTimeConnectionCheck = 0;
 uint64_t lastTimeReservationCheck = 0;
-bool isConnected = false;
+uint64_t lastTimeScreenUpdated = 0;
+
 bool isToValid = true;
 int currentReservationId = -1;
 
+
+
 void loop() {
-  
+  int currentHour, currentMinute;
+
   if (millis() - lastTimeConnectionCheck > DELAY_BETWEEN_CHECKS_CONNECTION || !isConnected) {
     lastTimeConnectionCheck = millis();
-    log_v("Checking connection...");
     isConnected = checkWifiConnection();
   }
 
   if (!isConnected) {
+    screenOutput.showInternetState(false);
     return;
   }
+
+  if (millis() - lastTimeScreenUpdated > DELAY_BETWEEN_CHECKS_HOURS) {
+    lastTimeScreenUpdated = millis();
+    getTime(&currentHour, &currentMinute);
+
+    screenOutput.showHour(currentHour, currentMinute);
+    screenOutput.showInternetState(true, WiFi.RSSI());
+  }
+
   if (millis() - lastTimeReservationCheck > DELAY_BETWEEN_CHECKS_NO_RESERVATION) {
     lastTimeReservationCheck = millis();
     log_v("Checking reservations...");
@@ -121,7 +146,6 @@ void loop() {
     greenLed.on();
     orangeLed.off();
   }
-  log_d("RSSI Wifi : %d dBm", WiFi.RSSI());
 }
 
 int checkReservations() {
@@ -139,6 +163,7 @@ int checkReservations() {
     greenLed.on();
     redLed.off();
     orangeLed.off();
+    screenOutput.showText("Aucune reservations");
     return -1;
   }
 
@@ -156,10 +181,8 @@ int checkReservations() {
   time_t now = time(nullptr);
   if (now == -1) {
     log_e("Failed to obtain timestamp");
-    return -1;
+    return -2;
   }
-
-
 
   log_v("Current timestamp: %ld", now);
 
@@ -167,15 +190,30 @@ int checkReservations() {
     redLed.on();
     greenLed.off();
     orangeLed.off();
+
+    String name = "";
+    String surname = "";
+    getReservationName((String)currentReservationId, name, surname);
+
+    screenOutput.showText("Reservation en cours : ", name + " " + surname);
+    
   } else if ( now > startReservationTimestamp && now < startReservationTimestamp + RESERVATION_TIME * 60) {
     greenLed.off();
     redLed.off();
     orangeLed.on();
     isToValid = true;
+    screenOutput.showText("Validez la reservation");
   } else {
     redLed.off();
     greenLed.on();
     orangeLed.off();
+    if ( now + TIME_BEFORE_SHOWING_RESERVATION * 60 > startReservationTimestamp) {
+      int timeBeforeReservation = startReservationTimestamp - now;
+
+      screenOutput.showText("Prochaine reservation dans", formatTime(timeBeforeReservation));
+    } else {
+      screenOutput.showText("Machine Libre");
+    }
   }
 
   if (reservationComing && now > startReservationTimestamp + RESERVATION_TIME * 60) {
@@ -253,17 +291,15 @@ bool checkWifiConnection() {
   return false;
 }
 
-void getReservationName(int reservationID, String& name, String& surname) {
+void getReservationName(String reservationID, String& name, String& surname) {
   int httpResponseCode = 0;
 
-  char idBuffer[9
-  ];
-  snprintf(idBuffer, sizeof(idBuffer), "%08d", reservationID);
+  String payload = "";
+  for (int i = reservationID.length(); i < 8; i++) {
+    payload += "0";
+  }
+  payload += reservationID;
 
-  // Prepare payload (here just the reservationID, adjust if your API expects more)
-  String payload = String(idBuffer);
-
-  // Send request to server (replace GET_RESERVATION_NAME with your actual command)
   int errorCode = server.sendRequest(GET_RESERVATION_NAME, strlen(GET_RESERVATION_NAME), payload.c_str(), payload.length(), &httpResponseCode);
   String response = server.getResponse();
 
@@ -276,18 +312,39 @@ void getReservationName(int reservationID, String& name, String& surname) {
 
   log_d("Server response: %s", response.c_str());
 
-  // Example: suppose response is "OKJohnDoe" (first 2 chars = code, then name, then surname)
-  // Adjust parsing logic to your actual response format
-  if (response.length() >= 4) {
-    name = response.substring(2, response.length() / 2 + 1); // Example split
-    surname = response.substring(response.length() / 2 + 1);
-  } else {
-    name = "";
+  response.trim();
+
+  int sep = response.indexOf('&');
+  if (sep < 0) {
+    name = response;
     surname = "";
+    return;
   }
+
+  name = response.substring(0, sep);
+  surname = response.substring(sep + 1);
 }
 
-void mainScreen() {
+void getTime(int* hours, int* minutes) {
+  time_t now = time(nullptr);
+  struct tm* timeinfo = localtime(&now);
+  *hours = timeinfo->tm_hour;
+  *minutes = timeinfo->tm_min;
+}
 
-  
+String formatTime(int time) {
+  int minutes, hours;
+
+  minutes = time / 60;
+  hours = minutes / 60;
+  minutes = minutes % 60;
+
+  String timeFormatted = "";
+
+  if (hours > 0) {
+    timeFormatted += String(hours) + "h";
+  }
+  timeFormatted += String(minutes) + "m" ;
+
+  return timeFormatted;
 }

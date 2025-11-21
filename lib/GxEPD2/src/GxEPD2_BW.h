@@ -350,6 +350,15 @@ GxEPD2_BW : public GxEPD2_GFX_BASE_CLASS
       }
     }
 
+    void fillScreenPartial(uint16_t color, uint16_t x, uint16_t y, uint16_t w, uint16_t h) // 0x0 black, >0x0 white, to buffer
+    {
+      for (uint16_t i = 0; i < w; i++) {
+        for (uint16_t j = 0; j < h; j++) {
+          drawPixel(x + i, y + j, color);
+        }
+      }
+    }
+
     // display buffer content to screen, useful for full screen buffer
     void display(bool partial_update_mode = false)
     {
@@ -635,6 +644,7 @@ GxEPD2_BW : public GxEPD2_GFX_BASE_CLASS
     {
       epd2.writeImage(bitmap, x, y, w, h, invert, mirror_y, pgm);
     }
+
     void writeImagePart(const uint8_t bitmap[], int16_t x_part, int16_t y_part, int16_t w_bitmap, int16_t h_bitmap,
                         int16_t x, int16_t y, int16_t w, int16_t h, bool invert = false, bool mirror_y = false, bool pgm = false)
     {

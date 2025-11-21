@@ -35,6 +35,6 @@ def image_to_c_array(image_path, output_path="bitmap.h"):
 
     print(f"Bitmap généré : {output_path}")
 
-image_to_c_array("images/Wifi_Logo_0.png")
+image_to_c_array("images/CampusFab_Logo.png")
 # Exemple d’utilisation :
 # image_to_c_array("mon_image.png")
