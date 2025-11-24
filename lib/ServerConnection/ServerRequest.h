@@ -13,6 +13,8 @@ constexpr const char* VALID_RESERVATION = "004";       // 004 = There is a reser
 constexpr const char* INVALID_RESERVATION = "005";     // 005 = There is no reservation
 constexpr const char* RESERVATION_STATE_CHANGED = "006"; // 006 = The reservation state has been changed successfully
 constexpr const char* RESERVATION_STATE_NOT_CHANGED = "007"; // 007 = The reservation state has not been changed
+constexpr const char* USER_FOUND = "008";               // 008 = User found
+constexpr const char* USER_NOT_FOUND = "009";           // 009 = User not found
 constexpr const char* CONNECTION_OK = "200";         // 200 = Connection to the server is OK
 constexpr const char* INVALID_REQUEST = "400";        // 400 = The request is invalid
 

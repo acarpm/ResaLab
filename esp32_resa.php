@@ -102,6 +102,42 @@ function changeReservationState($reservationID, $newStateCode, $conn) {
     return $response;
 }
 
+function getReservationName($reservationID, $conn) {
+    $stmt = $conn->prepare("SELECT user_id FROM booking WHERE booking_id = ?");
+    if (!$stmt) {
+        return false;
+    }
+
+    $stmt->bind_param("i", $reservationID);
+    $stmt->execute();
+    $stmt->bind_result($user_id);
+    if ($stmt->fetch()) {
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT full_name, name FROM user WHERE user_id = ?");
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->bind_result($user_full_name, $user_name);
+        if ($stmt->fetch()) {
+            $stmt->close();
+            $conn->close();
+            return "008" . $user_full_name . "&" . $user_name . "\n";
+        } else {
+            $stmt->close();
+            $conn->close();
+            return "009\n"; // User not found
+        }
+    } else {
+        $stmt->close();
+        $conn->close();
+        return "005\n"; // Reservation not found
+    }
+}
+
 // 2. Gestion POST : récupérer la donnée brute
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Récupérer le corps brut POST
@@ -129,6 +165,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $reservationID_str = intval(substr($payload, 0, 5));
             $newState_code = intval(substr($payload, 5));
             $response = changeReservationState($reservationID_str, $newState_code, $conn);
+            break;
+        case "104": // Get reservation name
+            $reservationID_str = intval($payload);
+            $response = getReservationName($reservationID_str, $conn);
             break;
         default:
             $response = "400\n";

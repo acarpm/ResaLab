@@ -56,7 +56,7 @@ const char* ntpServer = "pool.ntp.org";    // NTP server
 const long gmtOffset_sec = 3600;             // GMT offset in seconds
 const int daylightOffset_sec = 3600;      // Daylight saving time offset in seconds
 
-const char* deviceId = "00000002";
+const char* deviceId = "00000016";
 
 bool checkWifiConnection();
 
@@ -208,13 +208,14 @@ int checkReservations() {
     greenLed.on();
     orangeLed.off();
     if ( now + TIME_BEFORE_SHOWING_RESERVATION * 60 > startReservationTimestamp) {
-      int timeBeforeReservation = startReservationTimestamp - now;
+      int timeBeforeReservation = startReservationTimestamp - now + 60;
 
       screenOutput.showText("Prochaine reservation dans", formatTime(timeBeforeReservation));
     } else {
       screenOutput.showText("Machine Libre");
     }
   }
+  
 
   if (reservationComing && now > startReservationTimestamp + RESERVATION_TIME * 60) {
     changeReservationState(String(reservationId), RESERVATION_CANCELLED);
@@ -305,14 +306,30 @@ void getReservationName(String reservationID, String& name, String& surname) {
 
   if (errorCode != CODE_SUCCESS) {
     log_e("Failed to get reservation name. Error code: %d", errorCode);
-    name = "";
+    name = String(errorCode);
     surname = "";
     return;
   }
 
   log_d("Server response: %s", response.c_str());
 
-  response.trim();
+  String serverResponseCode = response.substring(0, 3);
+
+  if (serverResponseCode.equals(INVALID_RESERVATION)) {
+    log_e("Invalid reservation ID.");
+    name = serverResponseCode;
+    surname = "";
+    return;
+  }
+
+  if (serverResponseCode.equals(USER_NOT_FOUND)) {
+    log_e("User not found for reservation ID: %s", reservationID.c_str());
+    name = serverResponseCode;
+    surname = "";
+    return;
+  }
+
+  response = response.substring(3); // Remove response code
 
   int sep = response.indexOf('&');
   if (sep < 0) {
