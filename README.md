@@ -58,6 +58,47 @@ Le projet est divisé en **trois domaines complémentaires** :
 - Optimisation pour une production FabLab (impression, assemblage, maintenance).
 
 ---
+## ⚙️ Contraintes techniques
+
+La solution matérielle repose sur une carte électronique (PCB-A) spécialement conçue pour accueillir l’ensemble des composants nécessaires au fonctionnement du système ResaLab.  
+Les principales contraintes techniques sont les suivantes :
+
+### 🔌 Alimentation
+- La PCB est alimentée en **5V**.  
+- Une conversion est effectuée vers du **3.3V / 3A**, tension nécessaire pour l’ESP32-C3, l’écran e-ink et les autres composants basse tension.  
+- La capacité de **3A** permet de gérer les pics de consommation liés aux LED haute puissance et au module Wi-Fi.
+
+### 💡 Gestion des LED 3W
+- La carte comporte des pads **TP3 à TP8** destinés au câblage de **trois LED de 3W**.  
+- Ces LED sont contrôlées via des transistors (**Q1, Q2, Q3**) alimentés par le rail 3.3V / 3A.  
+- Les couleurs prévues sont :
+  - 🔴 Rouge  
+  - 🟠 Orange  
+  - 🟢 Vert  
+- Ces LED servent principalement aux retours visuels (disponible / réservé / en cours d’utilisation).
+
+### 🔘 Boutons lumineux
+- La PCB inclut des pads **TP9 à TP17** pour souder **trois boutons lumineux**.  
+- Chaque bouton dispose de pads dédiés :
+  - **GND**  
+  - **VCC**  
+  - Signal de commande / lecture  
+- Les boutons servent à l’interaction utilisateur autour de la validation ou navigation dans l’interface locale.
+
+### 🧠 Module ESP32-C3
+- La carte est conçue pour accueillir un **ESP32-C3 DevKit M**.  
+- Ce module assure :
+  - la connexion Wi-Fi sécurisée  
+  - la communication avec le serveur  
+  - la gestion des LED, boutons et écran
+
+### 🖥️ Interface écran e-ink (SPI 4 lignes)
+- La PCB expose des pins dédiés pour connecter un écran **e-ink 2.9"**, via un bus **SPI 4 lignes**.  
+- Le connecteur est prévu pour être compatible avec un câblage via **dupont wires**.
+
+### 🧩 GPIO supplémentaires
+- Les derniers GPIO non utilisés sont exposés via un **dernier connecteur dupont (J3)**.  
+- Ce connecteur permet d’ajouter des périphériques supplémentaires ou d'effectuer des tests.
 
 
 
