@@ -3,6 +3,7 @@
 ![ESP32-C3](https://img.shields.io/badge/ESP32--C3-Expressif-blue)
 ![E--Ink](https://img.shields.io/badge/Display-E--Ink-black)
 ![PCB](https://img.shields.io/badge/Hardware-PCB--A-green)
+---
 **ResaLab** est un projet multidomaine ayant pour objectif de **simplifier et centraliser la procédure de réservation des ressources du FabLab**.  
 Il vise à offrir une plateforme fiable, intuitive et interconnectée entre le site web, la base de données et les équipements physiques du FabLab.
 
