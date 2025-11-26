@@ -122,6 +122,14 @@ class ScreenOutput {
             display.display(true);
         }
 
+        void showProgressionBar(int percent) {
+            display.fillScreenPartial(GxEPD_BLACK, 2, 106, 292, 20);
+            display.fillScreenPartial(GxEPD_WHITE, 3, 107, 290, 18);
+
+            int width = (percent * 288) / 100;
+            display.fillScreenPartial(GxEPD_BLACK, 4, 108, width, 16);
+        }
+
 };
 
 

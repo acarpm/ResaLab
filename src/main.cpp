@@ -196,6 +196,10 @@ int checkReservations() {
     getReservationName((String)currentReservationId, name, surname);
 
     screenOutput.showText("Reservation en cours : ", name + " " + surname);
+
+    int progression = ((now - startReservationTimestamp) / (endReservationTimestamp - startReservationTimestamp)) * 100;
+
+    screenOutput.showProgressionBar(progression);
     
   } else if ( now > startReservationTimestamp && now < startReservationTimestamp + RESERVATION_TIME * 60) {
     greenLed.off();
