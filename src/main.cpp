@@ -60,7 +60,7 @@ const char* deviceId = "00000016";
 
 bool checkWifiConnection();
 
-void mainSreen();
+void mainScreen();
 
 int checkReservations();
 
@@ -82,7 +82,7 @@ void setup() {
   screenOutput.begin();
   WiFi.begin(ssid, password);
   server.connect(serverUrl);
-  uint8_t errorCode = server.checkConnection();
+  server.checkConnection();
 
 
   while (!isConnected) {
@@ -108,7 +108,6 @@ int currentReservationId = -1;
 
 
 void loop() {
-  int currentHour, currentMinute;
 
   if (millis() - lastTimeConnectionCheck > DELAY_BETWEEN_CHECKS_CONNECTION || !isConnected) {
     lastTimeConnectionCheck = millis();
@@ -122,6 +121,8 @@ void loop() {
 
   if (millis() - lastTimeScreenUpdated > DELAY_BETWEEN_CHECKS_HOURS) {
     lastTimeScreenUpdated = millis();
+
+    int currentHour, currentMinute;
     getTime(&currentHour, &currentMinute);
 
     screenOutput.showHour(currentHour, currentMinute);
@@ -132,6 +133,11 @@ void loop() {
     lastTimeReservationCheck = millis();
     log_v("Checking reservations...");
     currentReservationId = checkReservations();
+  }
+
+  if (currentReservationId == -2) {
+    screenOutput.showText("Erreur de connexion au serveur");
+    return;
   }
 
   if (leftButton.isPressed() && isToValid && currentReservationId != -1) {
@@ -154,6 +160,11 @@ int checkReservations() {
   int errorCode = server.sendRequest(GET_NEXT_RESERVATION, strlen(GET_NEXT_RESERVATION), deviceId, strlen(deviceId), &httpResponseCode);
   String response = server.getResponse();
 
+  if (errorCode != CODE_SUCCESS) {
+    log_e("Failed to send get next reservation request. Error code: %d", errorCode);
+    return -1;
+  }
+
   log_d("Server response: %s", response.c_str());
 
   String serverResponseCode = response.substring(0, 3);
@@ -163,7 +174,7 @@ int checkReservations() {
     greenLed.on();
     redLed.off();
     orangeLed.off();
-    screenOutput.showText("Aucune reservations");
+    screenOutput.showText("Aucune reservation");
     return -1;
   }
 
@@ -172,16 +183,16 @@ int checkReservations() {
   int startReservationTimestamp = response.substring(9, 19).toInt();
   int endReservationTimestamp = response.substring(19, 29).toInt();
 
-  log_d("Server response code: %s", serverResponseCode.c_str());
-  log_d("reservationComing: %d", reservationComing);
-  log_d("reservationId: %d", reservationId);
-  log_d("startReservationTimestamp: %d", startReservationTimestamp);
-  log_d("endReservationTimestamp: %d", endReservationTimestamp);
+  log_v("Server response code: %s", serverResponseCode.c_str());
+  log_v("reservationComing: %d", reservationComing);
+  log_v("reservationId: %d", reservationId);
+  log_v("startReservationTimestamp: %d", startReservationTimestamp);
+  log_v("endReservationTimestamp: %d", endReservationTimestamp);
 
   time_t now = time(nullptr);
   if (now == -1) {
     log_e("Failed to obtain timestamp");
-    return -2;
+    return -1;
   }
 
   log_v("Current timestamp: %ld", now);
@@ -194,11 +205,10 @@ int checkReservations() {
     String name = "";
     String surname = "";
     getReservationName((String)currentReservationId, name, surname);
-
+    getReservationName(String(reservationId), name, surname);
     screenOutput.showText("Reservation en cours : ", name + " " + surname);
 
-    int progression = ((now - startReservationTimestamp) / (endReservationTimestamp - startReservationTimestamp)) * 100;
-
+    int progression = (int)(((float)(now - startReservationTimestamp) / (float)(endReservationTimestamp - startReservationTimestamp)) * 100);
     screenOutput.showProgressionBar(progression);
     
   } else if ( now > startReservationTimestamp && now < startReservationTimestamp + RESERVATION_TIME * 60) {
@@ -212,6 +222,7 @@ int checkReservations() {
     greenLed.on();
     orangeLed.off();
     if ( now + TIME_BEFORE_SHOWING_RESERVATION * 60 > startReservationTimestamp) {
+      // Adding 60 seconds to round up.
       int timeBeforeReservation = startReservationTimestamp - now + 60;
 
       screenOutput.showText("Prochaine reservation dans", formatTime(timeBeforeReservation));
@@ -288,10 +299,8 @@ bool checkWifiConnection() {
 
   if (errorCode == ERROR_SERVER_DISCONNECTED) {
     log_v("Server disconnected");
-    orangeLed.blink(250, 250);
     orangeLed.blink(250, 1000);
   }
-
   log_d("Reconnection failed with error code: %d", errorCode);
   return false;
 }
@@ -299,6 +308,7 @@ bool checkWifiConnection() {
 void getReservationName(String reservationID, String& name, String& surname) {
   int httpResponseCode = 0;
 
+  // Pad reservation ID with leading zeros to ensure it is 8 characters long
   String payload = "";
   for (int i = reservationID.length(); i < 8; i++) {
     payload += "0";
@@ -333,8 +343,11 @@ void getReservationName(String reservationID, String& name, String& surname) {
     return;
   }
 
+  // Remove the first 3 characters which represent the response code
   response = response.substring(3); // Remove response code
 
+  // Split the response into name and surname using '&' as the delimiter
+  // Example response: "Mouchere&Ludovic"
   int sep = response.indexOf('&');
   if (sep < 0) {
     name = response;
@@ -346,6 +359,13 @@ void getReservationName(String reservationID, String& name, String& surname) {
   surname = response.substring(sep + 1);
 }
 
+/**
+ * @brief Retrieves the current local time and stores the hours and minutes.
+ * 
+ * @param[out] hours Pointer to an integer where the current hour (0-23) will be stored.
+ * @param[out] minutes Pointer to an integer where the current minute (0-59) will be stored.
+ * 
+ */
 void getTime(int* hours, int* minutes) {
   time_t now = time(nullptr);
   struct tm* timeinfo = localtime(&now);
@@ -353,6 +373,16 @@ void getTime(int* hours, int* minutes) {
   *minutes = timeinfo->tm_min;
 }
 
+/**
+ * @brief Formats a time value in seconds into a human-readable string format.
+ * 
+ * @param time The time value in seconds to be formatted.
+ * @return String A formatted time string in the format "Xh Ym" (if hours > 0) 
+ *         or "Ym" (if hours == 0), where X is hours and Y is minutes.
+ * 
+ * @note If the input time is less than 60 seconds, it will be displayed as "0m".
+ * 
+ */
 String formatTime(int time) {
   int minutes, hours;
 
