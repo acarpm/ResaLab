@@ -104,14 +104,11 @@ void setup() {
   screenOutput.showHour(currentHour, currentMinute);
   screenOutput.showInternetState(true, WiFi.RSSI());
 }
-uint64_t lastTimeConnectionCheck = 0;
-uint64_t lastTimeReservationCheck = 0;
-uint64_t lastTimeScreenUpdated = 0;
+
+uint64_t lastTimeConnectionCheck = 0, lastTimeReservationCheck = 0, lastTimeScreenUpdated = 0;
 
 bool isToValid = true;
 int currentReservationId = -1;
-
-
 
 void loop() {
 
