@@ -12,9 +12,9 @@
 #include "Identifier.h"
 
 /*
-TODO
-RAJOUTER UN BOOKING ID AU REQUETE SERVEUR PLUS FINISH TIME
-ATTENTION LE BOOKING ID IL FAUT RAJOUTER DES 0 POUR EVITER LE RAJOUT DE CHIFFRE POUR LES RESERVATIONS > 9 
+==================================================================================================
+                                        CONFIGURATION
+==================================================================================================
 */
 
 #define GREEN_LED_PIN 9
@@ -32,9 +32,18 @@ ATTENTION LE BOOKING ID IL FAUT RAJOUTER DES 0 POUR EVITER LE RAJOUT DE CHIFFRE 
 
 #define TIME_BEFORE_SHOWING_RESERVATION 180
 
-#define RESERVATION_CANCELLED "4"
-#define RESERVATION_ONGOING "1"
+#define RESERVATION_CANCELLED "4" // Reservation state for cancelled in the sql enum
+#define RESERVATION_ONGOING "1" // Reservation state for ongoing in the sql enum
 
+const char* deviceId = "00000016";  // Id of the device registered on the server
+
+const long gmtOffset_sec = 3600;   // GMT offset in seconds
+
+/*
+==================================================================================================
+                                        SCRIPT
+==================================================================================================
+*/
 
 extern "C" int lwip_hook_ip6_input(void *p) {
   return 1; // Retourne 1 pour indiquer que le paquet IPv6 est accepté
@@ -52,11 +61,8 @@ Led redLed = Led(RED_LED_PIN);
 Button leftButton = Button(LEFT_BUTTON_PIN);
 Button middleButton = Button(MIDDLE_BUTTON_PIN);
 
-const char* ntpServer = "pool.ntp.org";    // NTP server
-const long gmtOffset_sec = 3600;             // GMT offset in seconds
+const char* ntpServer = "pool.ntp.org";    // NTP server 
 const int daylightOffset_sec = 3600;      // Daylight saving time offset in seconds
-
-const char* deviceId = "00000016";
 
 bool checkWifiConnection();
 
