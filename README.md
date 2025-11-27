@@ -12,7 +12,7 @@ Il vise à offrir une plateforme fiable, intuitive et interconnectée entre le s
 Certaines constantes doivent être définies dans le firmware :
 
 ```
-const char* deviceId = "00000016";  // Id du device enregistré sur le serveur
+const char* deviceId = "00000001";  // Id du device enregistré sur le serveur
 ```
 
 Un fichier **identifier.h** doit être créé et contenir :
