@@ -7,6 +7,24 @@
 **ResaLab** est un projet multidomaine ayant pour objectif de **simplifier et centraliser la procédure de réservation des ressources du FabLab**.  
 Il vise à offrir une plateforme fiable, intuitive et interconnectée entre le site web, la base de données et les équipements physiques du FabLab.
 
+## ⚙️ Configuration requise
+
+Certaines constantes doivent être définies dans le firmware :
+
+```
+const char* deviceId = "00000016";  // Id du device enregistré sur le serveur
+```
+
+Un fichier **identifier.h** doit être créé et contenir :
+
+```
+const char* ssid = "";
+const char* password = "";
+const String serverUrl = "";
+```
+
+Ce fichier doit être inclus dans le code principal.
+
 ---
 
 ## 🎯 Objectifs du projet
