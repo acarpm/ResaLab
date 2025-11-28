@@ -55,7 +55,7 @@ uint8_t ServerConnection::checkConnection() {
     int httpResponseCode;
 
     // Check wifi connection
-    if (WiFi.status() != WL_CONNECTED) {
+    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
         log_e("Wifi disconnected. %d", WiFi.status());
         return ERROR_WIFI_DISCONNECTED;
     }
