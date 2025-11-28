@@ -50,7 +50,6 @@ extern "C" int lwip_hook_ip6_input(void *p) {
 }
 
 ServerConnection server;
-TaskHandle_t connectionTaskHandle = NULL;
 
 ScreenOutput screenOutput;
 
@@ -293,19 +292,21 @@ bool checkWifiConnection() {
   log_d("Connection lost. Error code: %d", errorCode);
 
   WiFi.reconnect();
-  server.reconnect();
+  errorCode = server.reconnect();
 
   if (errorCode == ERROR_WIFI_DISCONNECTED) {
     log_v("Wifi disconnected");
     orangeLed.blink(1000);
+    return false;
   }
 
   if (errorCode == ERROR_SERVER_DISCONNECTED) {
     log_v("Server disconnected");
     orangeLed.blink(250, 1000);
+    return false;
   }
-  log_d("Reconnection failed with error code: %d", errorCode);
-  return false;
+
+  return true;
 }
 
 void getReservationName(String reservationID, String& name, String& surname) {
