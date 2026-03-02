@@ -55,6 +55,8 @@ const char* ssid = "";
 const char* password = "";
 const String serverUrl = "";
 
+```cpp
+
 Ce fichier doit être inclus dans le code principal.
 
 🛠️ Architecture générale du projet
