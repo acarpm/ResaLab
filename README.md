@@ -59,20 +59,22 @@ const String serverUrl = "";
 
 Ce fichier doit être inclus dans le code principal.
 
-🛠️ Architecture générale du projet
+---
 
-Le projet est divisé en trois domaines complémentaires :
+## Architecture générale du projet
+
+Le projet est divisé en plusieurs domaines complémentaires :
 
 
-Site Web
+**Site Web**
 Plateforme de réservation en ligne
 Gestion des utilisateurs et des droits d'accès
 Gestion des réservations (création, modification, consultation)
 Base de données centralisée
 Historique d’utilisation
 
-Gestion des transactions / crédits
-⃣Carte électronique (ESP32-C3)
+**Gestion des transactions / crédits**
+Carte électronique (ESP32-C3)
 Interface Homme-Machine locale
 Validation des réservations via API serveur
 Autorisation d’accès à l’équipement
@@ -81,13 +83,13 @@ Affichage des informations sur écran e-ink
 Pilotage des LED 3W
 Communication Wi-Fi sécurisée
 
-Modélisation du boîtier
+**Modélisation du boîtier**
 Conception 3D du boîtier
 Intégration ergonomique des boutons et LEDs
 Adaptation aux contraintes d’impression 3D
 Optimisation pour maintenance et production FabLab
 
-
+Voici certaines contraintes à tenir en compte:
 Alimentation
 Entrée : 5V
 Conversion vers 3.3V / 3A
@@ -105,41 +107,20 @@ Couleurs :
 🟠 Orange
 🟢 Vert
 
-GPIO LED
+*GPIO LED*
 green  = 0
 orange = 9
 red    = 1
 
 
-🔘 Boutons lumineux
-
+*Boutons lumineux*
 Pads TP9 à TP17
 
-Connexions :
 
-GND
 
-VCC
+## Interface écran e-ink (SPI 4 lignes)
 
-Signal
-
-Les boutons permettent la validation de présence et la navigation dans l’interface locale.
-
-🧠 Module ESP32-C3
-
-Le module assure :
-
-Wi-Fi sécurisé
-
-Communication serveur
-
-Gestion des périphériques (LED, boutons, écran)
-
-Logique embarquée
-
-🖥️ Interface écran e-ink (SPI 4 lignes)
-
-Écran 2.9 connecté via SPI.
+Écran 2.9 connecté via SPI. https://github.com/WeActStudio/WeActStudio.EpaperModule
 
 Mapping GPIO
 MOSI : 7
