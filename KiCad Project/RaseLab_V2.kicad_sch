@@ -6,7 +6,7 @@
 	(paper "A4")
 	(title_block
 		(title "RESALAB")
-		(date "2026-04-29")
+		(date "2026-06-05")
 		(rev "V.2")
 		(company "CAMPUSFAB")
 		(comment 1 "MAMADOU MOUCTAR BA")
@@ -5225,7 +5225,7 @@
 	)
 	(text "NEOLED"
 		(exclude_from_sim no)
-		(at 80.772 131.572 0)
+		(at 21.336 142.494 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9219,7 +9219,7 @@
 				)
 			)
 		)
-		(property "Value" "2.2µF"
+		(property "Value" "2.2µH"
 			(at 95.504 177.038 90)
 			(show_name no)
 			(do_not_autoplace no)
