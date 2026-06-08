@@ -13183,6 +13183,234 @@
 		(layer "Edge.Cuts")
 		(uuid "b7c55a99-bd42-42ad-a062-c2d900cc531a")
 	)
+	(gr_text "VBUS\n"
+		(at 57.5 45.7 0)
+		(layer "F.SilkS")
+		(uuid "b7a00950-f20e-4c79-8df9-789afcbcfde0")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "GND\n"
+		(at 62.6 45.6 0)
+		(layer "F.SilkS")
+		(uuid "9031c03b-a198-4e88-b719-1689def6a5fc")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "GPIO11\n"
+		(at 67.2 45.7 0)
+		(layer "F.SilkS")
+		(uuid "bf19dca9-551c-4b58-9cb0-efcd259088a6")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "3V3\n"
+		(at 71.3 78.6 0)
+		(layer "F.SilkS")
+		(uuid "8c06e1e2-58f3-44ae-8962-9e7e0976b5a3")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "3V3\n"
+		(at 73.7 78.7 0)
+		(layer "F.SilkS")
+		(uuid "5806047d-73b3-4ddc-b1d5-fb205619d513")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "NON\nCONNECTE\n\n"
+		(at 75.5 80 0)
+		(layer "F.SilkS")
+		(uuid "9c9c74eb-181b-469c-912b-d6163ec652d4")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "GND\n"
+		(at 79.4 78.9 0)
+		(layer "F.SilkS")
+		(uuid "f1c03d80-52ca-4dea-a18f-dbdd8de5c994")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "GND\n"
+		(at 81.7 78.9 0)
+		(layer "F.SilkS")
+		(uuid "2409cc63-95b7-4693-a2bc-19f8c4a118ca")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "RXD0\n"
+		(at 83.8 79 0)
+		(layer "F.SilkS")
+		(uuid "84a94453-94c1-4e18-b4f0-0221292e7496")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "TXD0\n"
+		(at 86.4 78.8 0)
+		(layer "F.SilkS")
+		(uuid "9b7fd5b5-6ea3-42a4-ad47-5c21e66ad2a9")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "REST\n"
+		(at 88.9 78.6 0)
+		(layer "F.SilkS")
+		(uuid "172448d2-30b0-4df3-a43a-759541ee5b23")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "SLC\n"
+		(at 133 67.9 90)
+		(layer "F.SilkS")
+		(uuid "a254b6b8-306e-4bcf-8d0e-181a82a06652")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "GND\n"
+		(at 133 70.5 90)
+		(layer "F.SilkS")
+		(uuid "d9ff363f-4557-4a7c-b1ef-5a76dd07045c")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "D/C\n"
+		(at 133.1 65.3 90)
+		(layer "F.SilkS")
+		(uuid "3640b423-48f2-4087-9c8e-ecfc3ade46fa")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "BUSY\n"
+		(at 133.205 62.7 90)
+		(layer "F.SilkS")
+		(uuid "2349ae71-5785-4d3b-8e5a-e9c5e66624e6")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "RES\n"
+		(at 140 62.5 90)
+		(layer "F.SilkS")
+		(uuid "e253083b-1523-4552-8f3e-bc1d549f81b4")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "CS\n"
+		(at 140 65.2 90)
+		(layer "F.SilkS")
+		(uuid "74262650-e44e-4780-8082-98c09587b39b")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "SDA\n"
+		(at 140 68.1 90)
+		(layer "F.SilkS")
+		(uuid "1d92dd6d-ae26-4a33-8e3c-7eb31d4dee7c")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "VCC\n"
+		(at 140 70.9 90)
+		(layer "F.SilkS")
+		(uuid "88efa66a-e501-460c-92f4-653fde3175a8")
+		(effects
+			(font
+				(size 0.8 0.5)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
 	(gr_text "MAMADOU MOUCTAR BA ET ALEXANDRU CARP\n"
 		(at 101 88.5 0)
 		(layer "F.SilkS" knockout)
